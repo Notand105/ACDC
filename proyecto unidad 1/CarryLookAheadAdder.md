@@ -21,8 +21,36 @@ o expresado de otra forma:
 
 **Cout = (A * B) + (A⊕B) * Cin**
 
-Podemos diferenciar partes de esta expresión, donde la sección (A*B) se conocerá como *"carry generator"* y la sección
-(A⊕B) como *"carry propagator"*. Carry generator no tiene dependencia de Cin solo de los valores de entrada a y b
+Podemos diferenciar partes de esta expresión, donde la sección (A*B) se conocerá como *"carry generator **(G)**"* y la sección
+(A⊕B) como *"carry propagator **(P)**"*. G no tiene dependencia de Cin, solo de los valores de entrada a y b, mientras que P depende del carry de entrada. G nos permite conocer si el bit de la suma debe generar carry,
+P indica si el bit de la suma debe propagar carries generados por bits anteriores.
+
+**Cout = G + P*Cin**
+
+Calcularemos G y P para cada bit de la suma, podemos generalizar la expresión a:
+
+**Cn = Gn + Pn * Cn-1**
+
+De esta manera, si tenemos las entradas a,b y C0
+
+C1 = G1 + P1 * C0
+
+C2 = G2 + P2 * C1, si expandimos esto obtenemos:
+
+C2 = G2 + P2 * (G1 + P1 * C0), lo que es equivalente a : 
+
+C2 = G2 + P2 * G1 + P2 * P1 * C0
+
+Podemos dar un ejemplo más con C3
+
+C3 = G3 + P3 * C2
+
+C3 = G3 + P3 * (G2 + P2 * G1 + P2 * P1 * C0)
+
+C3 = G3 + P3 * G2 + P3 * P2 * G1 + P3 * P2 * P1 * C0
+
+Como podemos notar podemos obtener el carry en cualquier posición conociendo el Carry inicial, sin necesidad de esperar que se realicen las operaciones anteriores.
+
 
 
 

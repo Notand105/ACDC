@@ -1,0 +1,30 @@
+
+CHIP GeneratorPropagator {
+    IN a[4], b[4],c;    
+    OUT carry;   
+
+    PARTS:
+	And(a=a[0],b=b[0],out=G1);
+	And(a=a[1],b=b[1],out=G2);
+	And(a=a[2],b=b[2],out=G3);
+	And(a=a[3],b=b[3],out=G4);
+	
+	Or(a=a[0],b=b[0],out=P1); 
+	Or(a=a[1],b=b[1],out=P2);
+	Or(a=a[2],b=b[2],out=P3);
+	Or(a=a[3],b=b[3],out=P4);
+	
+	And(a=P1,b=P2,out=P12);
+	And(a=P12,b=P3,out=P13);
+	And(a=P13,b=P4, out=P14); 
+	And(a=P14, b=c,out=PreviousCarry);
+	
+	And(a=G1,b=P2,out=PPG12);
+	Or(a=PPG12, b=G2, out=PG12);
+	And(a=PG12, b=P3, out=PPG13);
+	Or(a=PPG13,b=G3,out=PG13);
+	And(a=PG13, b=P4,out=PPG14);
+	Or(a=PPG14, b=G4,out=PG14);
+	
+	Or(a=PreviousCarry, b=PG14,out=carry);
+}

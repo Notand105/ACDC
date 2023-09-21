@@ -1,0 +1,26 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/02/Add16.hdl
+
+/**
+ * Adds two 16-bit values.
+ * The most significant carry bit is ignored.
+ */
+
+CHIP Add16 {
+    IN a[16], b[16];
+    OUT out[16];
+
+    PARTS:
+	
+	GeneratorPropagator(a= a[0..3] ,b=b[0..3] ,c=false,carry=firstc);
+	GeneratorPropagator(a= a[4..7] ,b=b[4..7] ,c=firstc  ,carry=secondc);
+	GeneratorPropagator(a= a[8..11],b=b[8..11],c=secondc  ,carry=thirdc); 
+
+	FullAdder4bit(a = a[0..3],b=b[0..3], carry=false, out=out[0..3]);
+	FullAdder4bit(a = a[4..7],b=b[4..7], carry=firstc, out=out[4..7]);
+	FullAdder4bit(a = a[8..11],b=b[8..11], carry=secondc, out=out[8..11]);
+	FullAdder4bit(a = a[12..15],b=b[12..15], carry=thirdc, out=out[12..15]);
+
+}
