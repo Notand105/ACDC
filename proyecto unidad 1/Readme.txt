@@ -1,2 +1,1 @@
-Para la implementación del carry lookahead adder simplemente abrir el archivo Add16.hdl en el simulador de hardware junto con su 
-correspondiente archivo de test, el antiguo rippleadder sigué en la carpeta bajo el nombre de Add16ripple
+Para la implementación del carry lookahead adder simplemente abrir el archivo Add16.hdl en el simulador de hardware junto con su correspondiente archivo de test, el antiguo rippleadder sigué en la carpeta bajo el nombre de Add16ripple
