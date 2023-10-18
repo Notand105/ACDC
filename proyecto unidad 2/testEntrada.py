@@ -22,7 +22,7 @@ missesInstrucciones = 0
 hitsInstrucciones = 0
 lineas_a_analizar = 0
 wordsCopiados = 0
-wordsEscritos = 0
+wordsEscritos = [0,0]
 
 def convertir_a_binario(cadena):
     aDecimal = int(cadena, 16)
@@ -81,7 +81,6 @@ def configurar_cache():
         fullyAssociative = False
 
     # Procesar los datos del archivo.trace
-    print("Datos del archivo.trace:")
 
     instructions = []
 
@@ -123,56 +122,79 @@ def mapeo_directo(cache, instruccion):
     addr = format_instructions(instruccion[1])
     lineInCache = int(addr[1],2)
     if (instruccion[0] == '0'):
-        print("leer dato")
+        #print("leer dato")
         leerDatoMD(cache, lineInCache, addr[0])
     elif(instruccion[0]=='1'):
-        print('escribir dato')
+        #print('escribir dato')
+        escribirDato(cache, lineInCache, addr[0])
     elif (instruccion[0])=='2':
-        print('leer instruccion')
+        #print('leer instruccion')
         leerInstruccionMD(cache, lineInCache, addr[0])
     return cache
 
 def leerDatoMD(cache, line, tag):
-    global missesDatos, hitsDatos, wordsCopiados, blockSize
+    global missesDatos, hitsDatos, wordsCopiados, blockSize, wordsEscritos
     if (cache[line] == 'empty'):
-        print("miss por no existir, lo traemos de memoria")
-        #agrergar logica para escribir
+       # print("miss por no existir, lo traemos de memoria")
         cache[line] = tag
         missesDatos += 1
         wordsCopiados += blockSize 
     elif(cache[line] != tag  ):
-        print("miss por existir otro, reemplazamos por el nuevo trayendolo desde memoria")
-        #agrergar logica para escribir
+       # print("miss por existir otro, reemplazamos por el nuevo trayendolo desde memoria")
+        #si encontramos un dirty bit llevamos esa posicion se va a la memoria principal
+        if(len(cache[line]) > len(tag) ):
+            wordsEscritos[0] += 1
         cache[line] = tag
         missesDatos += 1
         wordsCopiados += blockSize 
+        
     elif (cache[line] == tag):
-        print("hit")
+       # print("hit")
         hitsDatos += 1
 
     return cache
 
 def leerInstruccionMD(cache, line, tag):
-    global missesInstrucciones, hitsInstrucciones, wordsCopiados, blockSize
+    global missesInstrucciones, hitsInstrucciones, wordsCopiados, blockSize, wordsEscritos
     if (cache[line] == 'empty'):
-        print("miss por no existir, lo traemos de memoria")
+        #print("miss por no existir, lo traemos de memoria")
         #agrergar logica para escribir
         cache[line] = tag
         missesInstrucciones += 1
         wordsCopiados += blockSize 
     elif(cache[line] != tag  ):
-        print("miss por existir otro, reemplazamos por el nuevo trayendolo desde memoria")
+        #print("miss por existir otro, reemplazamos por el nuevo trayendolo desde memoria")
         #agrergar logica para escribir
+        print("longitud cacheline", len(cache[line]))
+        print("longitud tag", len(tag))
+        print(len(cache[line]) > len(tag))
+        if(len(cache[line]) > len(tag) ):
+            wordsEscritos[0] += 1
         cache[line] = tag
         missesInstrucciones += 1
         wordsCopiados += blockSize 
     elif (cache[line] == tag):
-        print("hit")
+        #print("hit")
         hitsInstrucciones += 1
 
     return cache
 
-
+def escribirDato(cache,line,tag):
+    global writeThrough, noAllocate,wordsEscritos 
+    #si es write through accedemos a cache y memoria al mismo tiempo
+    if (writeThrough):
+        wordsEscritos[0] += 1
+        cache[line] = tag
+    else:
+        #si tenia un dirty bit desde antes entonces escribimos en memoria antes de actualizar el tag
+        if(len(cache[line]) > len(tag) ):
+            cache[line] = tag
+            wordsEscritos[0] += 1
+        else:
+            #escribimos solo a cache pero la posicion la marcaremos con un dirty bit
+            cache[line] = '1' + tag
+            #como solo accedimos a cache 
+            wordsEscritos[1] += 1
 
 
 def format_instructions(instruction):
@@ -183,14 +205,18 @@ def format_instructions(instruction):
     return [itag,iline] 
 
 def print_stats():
-    global missesDatos, hitsDatos, missesInstrucciones, hitsInstrucciones
+    global missesDatos, hitsDatos, missesInstrucciones, hitsInstrucciones, blockSize, writeThrough, wordsEscritos
     print("referencias a Instrucciones: ", missesInstrucciones+ hitsInstrucciones)
     print("referencias a datos: ", missesDatos + hitsDatos)
     print("misses datos: ", missesDatos)
     print("misses Instrucciones: ", missesInstrucciones)
     print("palabras copiadas desde memoria hasta caché: ", wordsCopiados)
-    print("palabras escritas desde caché a memoria: ", wordsEscritos)
-    tiempo = (hitsDatos * 5) + (hitsInstrucciones * 5) + (wordsCopiados * 100) + (wordsEscritos * 100)
+
+    if (not writeThrough):
+        print("veces que se añadido solo a cache: ", wordsEscritos[1], ", veces que se añadio a memoria principal con un dirty bit: ", wordsEscritos[0] )
+
+    print("palabras escritas desde caché a memoria: ", (wordsEscritos[0] + wordsEscritos[1])*blockSize)
+    tiempo = (hitsDatos * 5) + (hitsInstrucciones * 5) + (wordsCopiados * 100) + (((wordsEscritos[0] * 100) + (wordsEscritos[1]*5))*blockSize)
     print("tiempo: ", tiempo, " ns")
 
 
