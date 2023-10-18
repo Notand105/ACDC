@@ -1,0 +1,1 @@
+python3 testEntrada.py -bs 8 -cs 16 -wt -fa -sa 8 -wna -split <  archivo.trace
