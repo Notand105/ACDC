@@ -141,9 +141,6 @@ def leerDatoMD(cache, line, tag):
         wordsCopiados += blockSize 
     elif(cache[line] != tag  ):
        # print("miss por existir otro, reemplazamos por el nuevo trayendolo desde memoria")
-        #si encontramos un dirty bit llevamos esa posicion se va a la memoria principal
-        if(len(cache[line]) > len(tag) ):
-            wordsEscritos[0] += 1
         cache[line] = tag
         missesDatos += 1
         wordsCopiados += blockSize 
@@ -165,11 +162,6 @@ def leerInstruccionMD(cache, line, tag):
     elif(cache[line] != tag  ):
         #print("miss por existir otro, reemplazamos por el nuevo trayendolo desde memoria")
         #agrergar logica para escribir
-        print("longitud cacheline", len(cache[line]))
-        print("longitud tag", len(tag))
-        print(len(cache[line]) > len(tag))
-        if(len(cache[line]) > len(tag) ):
-            wordsEscritos[0] += 1
         cache[line] = tag
         missesInstrucciones += 1
         wordsCopiados += blockSize 
@@ -183,18 +175,27 @@ def escribirDato(cache,line,tag):
     global writeThrough, noAllocate,wordsEscritos 
     #si es write through accedemos a cache y memoria al mismo tiempo
     if (writeThrough):
+        #si es writeTrough no tiene sentido el usar noAllocate
+        #agregar a al inidice 0 implica que se cargo a memoria
         wordsEscritos[0] += 1
         cache[line] = tag
     else:
         #si tenia un dirty bit desde antes entonces escribimos en memoria antes de actualizar el tag
+        #print(len(cache[line])>len(tag))
         if(len(cache[line]) > len(tag) ):
-            cache[line] = tag
+            # si es not notAllocate o simplemente allocate guardamos en memoria y en cache, si es not allocate guardamos en memoria pero no en cache
+            if(not noAllocate):
+                cache[line] = tag
             wordsEscritos[0] += 1
         else:
             #escribimos solo a cache pero la posicion la marcaremos con un dirty bit
-            cache[line] = '1' + tag
+            if (not noAllocate):
+                cache[line] = '1' + tag
             #como solo accedimos a cache 
-            wordsEscritos[1] += 1
+            if (noAllocate):
+                wordsEscritos[0] += 1
+            else:    
+                wordsEscritos[1] += 1
 
 
 def format_instructions(instruction):
@@ -213,7 +214,7 @@ def print_stats():
     print("palabras copiadas desde memoria hasta caché: ", wordsCopiados)
 
     if (not writeThrough):
-        print("veces que se añadido solo a cache: ", wordsEscritos[1], ", veces que se añadio a memoria principal con un dirty bit: ", wordsEscritos[0] )
+        print("veces que se añadido solo a cache: ", wordsEscritos[1], ", veces que se añadio a memoria principal: ", wordsEscritos[0] )
 
     print("palabras escritas desde caché a memoria: ", (wordsEscritos[0] + wordsEscritos[1])*blockSize)
     tiempo = (hitsDatos * 5) + (hitsInstrucciones * 5) + (wordsCopiados * 100) + (((wordsEscritos[0] * 100) + (wordsEscritos[1]*5))*blockSize)
