@@ -181,11 +181,9 @@ def leerDatoFA(cache,tag):
     global missesDatos, hitsDatos, wordsCopiados, blockSize, wordsEscritos
     #buscamos en todo el cache si existe el tag
     for index,linea in enumerate(cache):
-        print(linea)
-        print(tag)
         if (linea == tag):
             #existe asi que le asignamos un hit 
-            hitDatos += 1
+            hitsDatos += 1
             cache = actualizar_cache_fa(cache, index)
             return cache
     #si llegamos aqui es porque no existe entonces buscamos si hay un espacio libre y lo agregamos ahi ademas sabemos que es un miss
@@ -193,10 +191,8 @@ def leerDatoFA(cache,tag):
     wordsCopiados += blockSize
     for linea in cache:
         if (linea == 'empty'):
-            linea = tag
-            print("cache: ", cache, " linea: ", linea)
+            cache[index]= tag
             cache = actualizar_cache_fa(cache, index)
-            print("cache despues de actualizar", cache)
             return cache
     #finalmente si no está vacio y ademas el cache está lleno 
     cache[0] = tag
@@ -237,7 +233,7 @@ def leerInstruccionFA(cache,tag):
     wordsCopiados += blockSize
     for linea in cache:
         if (linea == 'empty'):
-            linea = tag
+            cache[index]= tag
             cache = actualizar_cache_fa(cache, index)
             return cache
     #finalmente si no está vacio y ademas el cache está lleno 
@@ -283,7 +279,7 @@ def escribirDatoFA(cache,tag):
         for index,linea in enumerate(cache):
             #si hay una linea vacia escribimos ahi
             if(linea == 'empty'):
-                linea = tag
+                cache[index]= tag
                 cache = actualizar_cache_fa(cache, index)
                 return cache
         #si no hay linea vacia reemplazamos el menos usado
@@ -301,7 +297,7 @@ def escribirDatoFA(cache,tag):
             for index,linea in enumerate(cache):
             #si hay una linea vacia escribimos ahi, pero no pasaremos a memoria aun marcamos con dirty bit
                 if(linea == 'empty'):
-                    linea = '1' + tag
+                    cache[index]= '1' + tag
                     cache = actualizar_cache_fa(cache, index)
                     wordsEscritos[1] += 1
                     return cache
@@ -356,12 +352,17 @@ def print_stats():
 if __name__ == "__main__":
     instructions = configurar_cache()
     if(fullyAssociative ):
-        print("fully asociative")
+        print("\n")
+        print("Fully asociative")
+        print("\n")
         dividir_entrada_fa()
         cache = creaCache()
         for i in instructions:
             cache = full_associative(cache, i)
     else:
+        print("\n")
+        print("Mapeo Directo")
+        print("\n")
         dividir_entrada() 
         cache = creaCache()
         for i in instructions:

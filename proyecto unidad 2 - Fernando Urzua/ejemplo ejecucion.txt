@@ -1,0 +1,5 @@
+ejemplo de como correr programa: 
+
+python3 main.py -bs 8 -cs 256  -wna  < spice.trace
+
+es importante que despues de seleccionar los parametros se agregue un "<" y despues el nombre del archivo a leer, que debe estar en la misma ubicación que main.py
